@@ -43,7 +43,7 @@
                 if (epicCodeResponse.status === 200) {
                     // Fetch Fortnite stats using the retrieved account ID
                     const accountId = epicCodeData.data.account.id;
-                    const apiKey = process.env.FNAPI; // Retrieve API key from GitHub secret
+                    const apiKey =  secrets.FNAPI; // Retrieve API key from GitHub secret
                     const statsResponse = await fetch(`https://fortnite-api.com/v2/stats/br/v2?accountID=${accountId}`, {
                         headers: {
                             'Authorization': `Bearer ${apiKey}`
