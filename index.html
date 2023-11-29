@@ -23,14 +23,29 @@
         </nav>
     </header>
 
-    <!-- Add an input field for Epic code and a button -->
-    <input type="text" id="epicCodeInput" placeholder="Enter Epic Code">
-    <button onclick="searchUserByEpicCode()">Search</button>
+    <div class="container">
+        <div class="row">
+            <div class="input-field col s6">
+                <input type="text" id="epicCodeInput" class="validate" placeholder="Enter Epic Code">
+                <label for="epicCodeInput">Epic Code</label>
+            </div>
+            <div class="col s6">
+                <button class="btn waves-effect waves-light" onclick="searchUserByEpicCode()">Search</button>
+            </div>
+        </div>
 
-    <!-- Add a div to display user stats -->
-    <div id="userStats"></div>
+        <!-- Add a div to display user stats -->
+        <div id="userStats" class="card"></div>
+    </div>
+
+    <!-- Add Materialize JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <script>
+        // Set your API key here
+        const apiKey = "c79b6903-d59e-49bf-a1bf-dd817ab184c5";
+
         // Function to search for a user by Epic code
         async function searchUserByEpicCode() {
             const epicCode = document.getElementById('epicCodeInput').value;
@@ -43,7 +58,6 @@
                 if (epicCodeResponse.status === 200) {
                     // Fetch Fortnite stats using the retrieved account ID
                     const accountId = epicCodeData.data.account.id;
-                    const apiKey =  secrets.FNAPI; // Retrieve API key from GitHub secret
                     const statsResponse = await fetch(`https://fortnite-api.com/v2/stats/br/v2?accountID=${accountId}`, {
                         headers: {
                             'Authorization': `Bearer ${apiKey}`
@@ -56,25 +70,32 @@
                         // Display user stats
                         const userStats = statsData.data;
                         const displayStats = `
-                            <p>Code: ${userStats.code}</p>
-                            <p>Overall Wins: ${userStats.stats.all.overall.wins}</p>
-                            <p>Kills: ${userStats.stats.all.overall.kills}</p>
-                            <!-- Add more stats as needed -->
+                            <div class="card-content">
+                                <span class="card-title">Code: ${epicCode}</span>
+                                <p>Overall Wins: ${userStats.stats.all.overall.wins}</p>
+                                <p>Kills: ${userStats.stats.all.overall.kills}</p>
+                                <!-- Add more stats as needed -->
+                            </div>
                         `;
                         document.getElementById('userStats').innerHTML = displayStats;
                     } else {
                         // Display an error message for stats API
-                        document.getElementById('userStats').innerHTML = `Error fetching user stats: ${statsData.status.message}`;
+                        document.getElementById('userStats').innerHTML = `<div class="card-content red-text">Error fetching user stats: ${statsData.status.message}</div>`;
                     }
                 } else {
                     // Display an error message for Epic code API
-                    document.getElementById('userStats').innerHTML = `Error fetching Epic code data: ${epicCodeData.status.message}`;
+                    document.getElementById('userStats').innerHTML = `<div class="card-content red-text">Error fetching Epic code data: ${epicCodeData.status.message}</div>`;
                 }
             } catch (error) {
                 // Handle fetch error
                 console.error('Error fetching data:', error);
             }
         }
+
+        // Initialize Materialize components
+        document.addEventListener('DOMContentLoaded', function() {
+            M.AutoInit();
+        });
     </script>
 </body>
 </html>
