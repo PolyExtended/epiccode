@@ -24,18 +24,20 @@
     </header>
 
     <div class="container">
-        <div class="row">
-            <div class="input-field col s6">
-                <input type="text" id="epicCodeInput" class="validate" placeholder="Enter Epic Code">
-                <label for="epicCodeInput">Epic Code</label>
+        <form id="fortniteForm" onsubmit="event.preventDefault(); searchUserByEpicCode();">
+            <div class="row">
+                <div class="input-field col s6">
+                    <input type="text" id="epicCodeInput" class="validate" placeholder="Enter Epic Code" onkeypress="handleKeyPress(event)">
+                    <label for="epicCodeInput">Epic Code</label>
+                </div>
+                <div class="col s6">
+                    <button class="btn waves-effect waves-light" type="submit">Search</button>
+                </div>
             </div>
-            <div class="col s6">
-                <button class="btn waves-effect waves-light" onclick="searchUserByEpicCode()">Search</button>
-            </div>
-        </div>
+        </form>
 
-        <!-- Add a div to display user stats -->
-        <div id="userStats" class="card"></div>
+        <!-- Add div to display user code data -->
+        <div id="userCode" class="card"></div>
     </div>
 
     <!-- Add Materialize JS -->
@@ -51,44 +53,65 @@
             const epicCode = document.getElementById('epicCodeInput').value;
 
             try {
-                // Fetch Fortnite user data based on Epic code
-                const epicCodeResponse = await fetch(`https://fortnite-api.com/v2/creatorcode?name=${epicCode}`);
-                const epicCodeData = await epicCodeResponse.json();
+                // Fetch Fortnite creator code data using Epic code
+                const creatorCodeResponse = await fetch(`https://fortnite-api.com/v2/creatorcode?name=${epicCode}`);
+                const creatorCodeData = await creatorCodeResponse.json();
 
-                if (epicCodeResponse.status === 200) {
-                    // Fetch Fortnite stats using the retrieved account ID
-                    const accountId = epicCodeData.data.account.id;
-                    const statsResponse = await fetch(`https://fortnite-api.com/v2/stats/br/v2?accountID=${accountId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`
-                        }
-                    });
+                if (creatorCodeResponse.status === 200) {
+                    // Display user code data
+                    const isBanned = await isUserBanned(epicCode);
 
-                    const statsData = await statsResponse.json();
-
-                    if (statsResponse.status === 200) {
-                        // Display user stats
-                        const userStats = statsData.data;
-                        const displayStats = `
+                    if (isBanned) {
+                        document.getElementById('userCode').innerHTML = `
                             <div class="card-content">
-                                <span class="card-title">Code: ${epicCode}</span>
-                                <p>Overall Wins: ${userStats.stats.all.overall.wins}</p>
-                                <p>Kills: ${userStats.stats.all.overall.kills}</p>
-                                <!-- Add more stats as needed -->
+                                <span class="card-title red badge">This Code is Banned</span>
+                            </div>`;
+                    } else {
+                        const userCode = creatorCodeData.data;
+                        const displayCode = `
+                            <div class="card-content">
+                                <span class="card-title">Epic Code: ${userCode.code}</span>
+                                <p>Name: ${userCode.account.name}</p>
+                                <p>Account ID: ${userCode.account.id}</p>
+                                <p>Status: ${userCode.status}</p>
                             </div>
                         `;
-                        document.getElementById('userStats').innerHTML = displayStats;
-                    } else {
-                        // Display an error message for stats API
-                        document.getElementById('userStats').innerHTML = `<div class="card-content red-text">Error fetching user stats: ${statsData.status.message}</div>`;
+                        document.getElementById('userCode').innerHTML = displayCode;
                     }
                 } else {
                     // Display an error message for Epic code API
-                    document.getElementById('userStats').innerHTML = `<div class="card-content red-text">Error fetching Epic code data: ${epicCodeData.status.message}</div>`;
+                    document.getElementById('userCode').innerHTML = `<div class="card-content red-text">Error fetching Epic code data: ${creatorCodeData.status.message}</div>`;
                 }
             } catch (error) {
                 // Handle fetch error
                 console.error('Error fetching data:', error);
+                document.getElementById('userCode').innerHTML = `<div class="card-content red-text">Error fetching user data: ${error.message}</div>`;
+            }
+        }
+
+        // Function to fetch banned users
+        async function getBannedUsers() {
+            try {
+                const response = await fetch('banned.json'); // Replace with your actual path or URL
+                const data = await response.json();
+                return data.BannedUsers || [];
+            } catch (error) {
+                console.error('Error fetching banned users:', error);
+                return [];
+            }
+        }
+
+        // Function to check if a user is banned
+        async function isUserBanned(username) {
+            const bannedUsers = await getBannedUsers();
+            const lowercaseUsername = username.toLowerCase();
+            return bannedUsers.map(u => u.toLowerCase()).includes(lowercaseUsername);
+        }
+
+        // Function to handle Enter key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchUserByEpicCode();
             }
         }
 
@@ -96,6 +119,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             M.AutoInit();
         });
+
+        // Check if there is a user parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const userParam = urlParams.get('user');
+
+        if (userParam) {
+            document.getElementById('epicCodeInput').value = userParam;
+            searchUserByEpicCode();
+        }
     </script>
 </body>
 </html>
