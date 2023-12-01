@@ -1,3 +1,3 @@
- ![Poly - Epic Code](demo.png)
+ ![Poly - Epic Code](gbQ9hH.png)
 
 Poly - Epic Code
