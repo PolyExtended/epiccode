@@ -73,7 +73,7 @@
                                 <span class="card-title">Epic Code: ${userCode.code}</span>
                                 <p>Name: ${userCode.account.name}</p>
                                 <p>Account ID: ${userCode.account.id}</p>
-                                <p>Status: ${userCode.status}</p>
+                                <p>Status: <span class="new badge" data-badge-caption="${userCode.status}"></span><p>
                             </div>
                         `;
                         document.getElementById('userCode').innerHTML = displayCode;
@@ -85,7 +85,7 @@
             } catch (error) {
                 // Handle fetch error
                 console.error('Error fetching data:', error);
-                document.getElementById('userCode').innerHTML = `<div class="card-content red-text">Error fetching user data: ${error.message}</div>`;
+                document.getElementById('userCode').innerHTML = `<div class="card-content red-text"><span class="new badge red">4</span> ${error.message}</div>`;
             }
         }
 
